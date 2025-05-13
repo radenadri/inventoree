@@ -145,6 +145,13 @@ app_license = "mit"
 # 	}
 # }
 
+doc_events = {
+    "Stock Entry": {
+        "on_cancel": "inventoree.inventoree.events.stock_entry_events.on_cancel",
+        "on_change": "inventoree.inventoree.events.stock_entry_events.on_change"
+    }
+}
+
 # Scheduled Tasks
 # ---------------
 
@@ -241,4 +248,3 @@ app_license = "mit"
 # default_log_clearing_doctypes = {
 # 	"Logging DocType Name": 30  # days to retain logs
 # }
-

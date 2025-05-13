@@ -1,0 +1,113 @@
+{
+ "_liked_by": "[\"Administrator\"]",
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-04-30 23:32:14.031969",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "general_information_section",
+  "item_code",
+  "warehouse",
+  "quantity_information_section",
+  "projected_quantity",
+  "actual_quantity",
+  "reserved_quantity",
+  "ordered_quantity",
+  "indented_quantity",
+  "planned_quantity"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_information_section",
+   "fieldtype": "Section Break",
+   "label": "General Information"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Link",
+   "label": "Item Code",
+   "options": "Item"
+  },
+  {
+   "fieldname": "warehouse",
+   "fieldtype": "Link",
+   "label": "Warehouse",
+   "options": "Warehouse"
+  },
+  {
+   "fieldname": "quantity_information_section",
+   "fieldtype": "Section Break",
+   "label": "Quantity Information"
+  },
+  {
+   "default": "0",
+   "fieldname": "projected_quantity",
+   "fieldtype": "Float",
+   "label": "Projected Quantity",
+   "precision": "1"
+  },
+  {
+   "default": "0",
+   "fieldname": "actual_quantity",
+   "fieldtype": "Float",
+   "label": "Actual Quantity",
+   "precision": "1"
+  },
+  {
+   "default": "0",
+   "fieldname": "reserved_quantity",
+   "fieldtype": "Float",
+   "label": "Reserved Quantity",
+   "precision": "1"
+  },
+  {
+   "default": "0",
+   "fieldname": "ordered_quantity",
+   "fieldtype": "Float",
+   "label": "Ordered Quantity",
+   "precision": "1"
+  },
+  {
+   "default": "0",
+   "fieldname": "indented_quantity",
+   "fieldtype": "Float",
+   "label": "Indented Quantity",
+   "precision": "1"
+  },
+  {
+   "default": "0",
+   "fieldname": "planned_quantity",
+   "fieldtype": "Float",
+   "label": "Planned Quantity",
+   "precision": "1"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-05-01 01:54:06.330352",
+ "modified_by": "Administrator",
+ "module": "Inventoree",
+ "name": "Bin",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1,
+ "track_seen": 1,
+ "track_views": 1
+}

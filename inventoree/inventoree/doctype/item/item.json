@@ -1,0 +1,231 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:",
+ "creation": "2025-04-30 16:21:48.914762",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "general_information_tab",
+  "item_code",
+  "item_name",
+  "item_group",
+  "disabled",
+  "section_break_iefl",
+  "barcode",
+  "section_break_iwnd",
+  "item_image",
+  "description",
+  "stock_details_tab",
+  "uom",
+  "section_break_ltzr",
+  "is_stock_item",
+  "minimum_stock_level",
+  "reorder_level",
+  "section_break_uahe",
+  "valuation_rate",
+  "weight_and_dimension_tab",
+  "weight_information_section",
+  "weight_uom",
+  "column_break_qtzt",
+  "weight",
+  "dimension_information_section",
+  "dimension_uom",
+  "column_break_boat",
+  "length",
+  "width",
+  "height"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_information_tab",
+   "fieldtype": "Tab Break",
+   "label": "General Information"
+  },
+  {
+   "fieldname": "item_code",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Code",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Item Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "item_group",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Group",
+   "options": "Item Group",
+   "reqd": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "section_break_iefl",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "barcode",
+   "fieldtype": "Data",
+   "label": "Barcode"
+  },
+  {
+   "fieldname": "section_break_iwnd",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "item_image",
+   "fieldtype": "Attach Image",
+   "label": "Item Image"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Text Editor",
+   "label": "Description"
+  },
+  {
+   "fieldname": "stock_details_tab",
+   "fieldtype": "Tab Break",
+   "label": "Stock Details"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Link",
+   "label": "UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "section_break_ltzr",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "is_stock_item",
+   "fieldtype": "Check",
+   "label": "Is Stock Item"
+  },
+  {
+   "default": "1",
+   "description": "Minimum quantity to maintain in inventory\n",
+   "fieldname": "minimum_stock_level",
+   "fieldtype": "Float",
+   "label": "Minimum Stock Level",
+   "precision": "2"
+  },
+  {
+   "description": "Quantity threshold to trigger reordering\n",
+   "fieldname": "reorder_level",
+   "fieldtype": "Float",
+   "label": "Reorder Level",
+   "precision": "2"
+  },
+  {
+   "fieldname": "section_break_uahe",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "Standard cost of the item for inventory valuation\n\n\n\n",
+   "fieldname": "valuation_rate",
+   "fieldtype": "Currency",
+   "label": "Valuation Rate"
+  },
+  {
+   "fieldname": "weight_and_dimension_tab",
+   "fieldtype": "Tab Break",
+   "label": "Weight and Dimension"
+  },
+  {
+   "fieldname": "weight_information_section",
+   "fieldtype": "Section Break",
+   "label": "Weight Information"
+  },
+  {
+   "fieldname": "weight_uom",
+   "fieldtype": "Link",
+   "label": "Weight UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "column_break_qtzt",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "weight",
+   "fieldtype": "Float",
+   "label": "Weight",
+   "precision": "2"
+  },
+  {
+   "fieldname": "dimension_information_section",
+   "fieldtype": "Section Break",
+   "label": "Dimension Information"
+  },
+  {
+   "description": "Unit of Measurement for dimensions",
+   "fieldname": "dimension_uom",
+   "fieldtype": "Link",
+   "label": "Dimension UOM",
+   "options": "UOM"
+  },
+  {
+   "fieldname": "column_break_boat",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Length of the item",
+   "fieldname": "length",
+   "fieldtype": "Float",
+   "label": "Length",
+   "precision": "2"
+  },
+  {
+   "description": "Width of the item",
+   "fieldname": "width",
+   "fieldtype": "Float",
+   "label": "Width",
+   "precision": "2"
+  },
+  {
+   "description": "Height of the item",
+   "fieldname": "height",
+   "fieldtype": "Float",
+   "label": "Height",
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-04-30 16:45:06.200935",
+ "modified_by": "Administrator",
+ "module": "Inventoree",
+ "name": "Item",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

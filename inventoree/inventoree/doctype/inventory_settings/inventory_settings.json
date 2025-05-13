@@ -1,0 +1,47 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-05-13 23:55:07.925869",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "global_setting_section",
+  "allow_negative_stock"
+ ],
+ "fields": [
+  {
+   "fieldname": "global_setting_section",
+   "fieldtype": "Section Break",
+   "label": "Global Setting"
+  },
+  {
+   "default": "0",
+   "fieldname": "allow_negative_stock",
+   "fieldtype": "Check",
+   "label": "Allow Negative Stock?"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2025-05-13 23:55:40.001865",
+ "modified_by": "Administrator",
+ "module": "Inventoree",
+ "name": "Inventory Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
