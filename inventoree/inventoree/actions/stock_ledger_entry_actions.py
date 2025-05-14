@@ -5,7 +5,7 @@ from frappe import _
 from frappe.utils import flt, get_datetime
 
 
-def make_stock_ledger_entries(sl_entries, allow_negative_stock=False):
+def make_stock_ledger_entry(sl_entries, allow_negative_stock=False):
     """
     Create Stock Ledger Entries for stock movements
     Args:
@@ -21,7 +21,7 @@ def make_stock_ledger_entries(sl_entries, allow_negative_stock=False):
                 sle.set(field, value)
 
         # Calculate qty_after_transaction
-        previous_sle = get_previous_sle(
+        previous_sle = get_previous_stock_ledger_entry(
             sle.item_code, sle.warehouse, sle.posting_date, sle.posting_time
         )
 
@@ -84,7 +84,35 @@ def make_stock_ledger_entries(sl_entries, allow_negative_stock=False):
         )
 
 
-def get_previous_sle(item_code, warehouse, posting_date, posting_time):
+def get_stock_ledger_entry(doc, item, warehouse, qty, is_cancelled=0):
+    """
+    Prepare data for Stock Ledger Entry
+    """
+    # If cancelled, reverse qty
+    actual_qty = -1 * qty if is_cancelled else qty
+
+    # Set incoming rate for positive quantity or transfer
+    incoming_rate = flt(item.basic_rate) if qty > 0 else 0
+
+    # Create SLE data
+    sle = {
+        "item_code": item.item_code,
+        "item_name": item.item_name,
+        "warehouse": warehouse,
+        "posting_date": doc.posting_date,
+        "posting_time": doc.posting_time,
+        "voucher_type": "Stock Entry",
+        "voucher_no": doc.name,
+        "voucher_detail_no": item.name,
+        "incoming_rate": incoming_rate,
+        "actual_quantity": actual_qty,
+        "uom": item.uom,
+    }
+
+    return sle
+
+
+def get_previous_stock_ledger_entry(item_code, warehouse, posting_date, posting_time):
     """
     Get the last SLE for an item in a warehouse before the specified time
     """
@@ -112,32 +140,7 @@ def get_previous_sle(item_code, warehouse, posting_date, posting_time):
     return entries[0] if entries else {}
 
 
-def get_or_create_bin(item_code, warehouse):
-    """
-    Get existing Bin or create a new one
-    """
-    bin_name = warehouse + "-" + item_code
-
-    if not frappe.db.exists("Bin", bin_name):
-        bin_doc = frappe.new_doc("Bin")
-        bin_doc.item_code = item_code
-        bin_doc.warehouse = warehouse
-        bin_doc.actual_qty = 0
-        bin_doc.ordered_qty = 0
-        bin_doc.reserved_qty = 0
-        bin_doc.indented_qty = 0
-        bin_doc.planned_qty = 0
-        bin_doc.projected_qty = 0
-        bin_doc.uom = frappe.db.get_value("Item", item_code, "uom")
-        bin_doc.flags.ignore_permissions = 1
-        bin_doc.insert()
-    else:
-        bin_doc = frappe.get_doc("Bin", bin_name)
-
-    return bin_doc
-
-
-def get_actual_qty_from_sle(item_code, warehouse):
+def get_actual_qty_from_stock_ledger_entry(item_code, warehouse):
     """
     Get actual quantity from latest Stock Ledger Entry
     """
@@ -182,99 +185,29 @@ def get_reserved_qty(item_code, warehouse):
     return 0
 
 
-def get_sl_entry(doc, item, warehouse, qty, is_cancelled=0):
+def get_or_create_bin(item_code, warehouse):
     """
-    Prepare data for Stock Ledger Entry
+    Get existing Bin or create a new one
     """
-    # If cancelled, reverse qty
-    actual_qty = -1 * qty if is_cancelled else qty
+    bin_name = warehouse + "-" + item_code
 
-    # Set incoming rate for positive quantity or transfer
-    incoming_rate = flt(item.basic_rate) if qty > 0 else 0
+    if not frappe.db.exists("Bin", bin_name):
+        bin_doc = frappe.new_doc("Bin")
+        bin_doc.item_code = item_code
+        bin_doc.warehouse = warehouse
+        bin_doc.actual_qty = 0
+        bin_doc.ordered_qty = 0
+        bin_doc.reserved_qty = 0
+        bin_doc.indented_qty = 0
+        bin_doc.planned_qty = 0
+        bin_doc.projected_qty = 0
+        bin_doc.uom = frappe.db.get_value("Item", item_code, "uom")
+        bin_doc.flags.ignore_permissions = 1
+        bin_doc.insert()
+    else:
+        bin_doc = frappe.get_doc("Bin", bin_name)
 
-    # Create SLE data
-    sle = {
-        "item_code": item.item_code,
-        "item_name": item.item_name,
-        "warehouse": warehouse,
-        "posting_date": doc.posting_date,
-        "posting_time": doc.posting_time,
-        "voucher_type": "Stock Entry",
-        "voucher_no": doc.name,
-        "voucher_detail_no": item.name,
-        "incoming_rate": incoming_rate,
-        "actual_qty": actual_qty,
-        "uom": item.uom,
-    }
-
-    return sle
-
-
-def update_bin(doc):
-    """
-    Update bin qty after Stock Entry submit/cancel
-    """
-
-    # Update bins for all affected warehouses and items
-    affected_items = {}
-
-    for item in doc.items:
-        if doc.entry_type == "Receipt":
-            affected_items.setdefault(item.item_code, []).append(doc.to_warehouse)
-
-        elif doc.entry_type == "Issue":
-            affected_items.setdefault(item.item_code, []).append(doc.from_warehouse)
-
-        elif doc.entry_type == "Transfer":
-            affected_items.setdefault(item.item_code, []).append(doc.from_warehouse)
-            affected_items.setdefault(item.item_code, []).append(doc.to_warehouse)
-
-        elif doc.entry_type == "Adjustment":
-            warehouse = (
-                doc.to_warehouse if flt(item.quantity) > 0 else doc.from_warehouse
-            )
-            affected_items.setdefault(item.item_code, []).append(warehouse)
-
-    # Ensure unique warehouses for each item
-    for item_code, warehouses in affected_items.items():
-        for warehouse in list(set(warehouses)):
-            update_bin_from_sle(item_code, warehouse)
-
-
-def update_bin_from_sle(item_code, warehouse):
-    """
-    Update Bin based on Stock Ledger Entry
-    """
-    # Get or create Bin
-    bin_doc = get_or_create_bin(item_code, warehouse)
-
-    # Get latest actual_qty from SLE
-    actual_qty = get_actual_qty_from_sle(item_code, warehouse)
-
-    # Get other reserved quantities
-    # These values would usually come from other documents (PO, SO, etc.)
-    # Simplified version here
-    ordered_qty = get_ordered_qty(item_code, warehouse)
-    reserved_qty = get_reserved_qty(item_code, warehouse)
-
-    # Calculate projected_qty
-    projected_qty = flt(actual_qty) + flt(ordered_qty) - flt(reserved_qty)
-
-    # Update the Bin
-    frappe.db.set_value(
-        "Bin",
-        bin_doc.name,
-        {
-            "actual_qty": actual_qty,
-            "projected_qty": projected_qty,
-            "ordered_qty": ordered_qty,
-            "reserved_qty": reserved_qty,
-        },
-        update_modified=False,
-    )
-
-    # Update item valuation rate if needed
-    update_item_valuation_rate(item_code)
+    return bin_doc
 
 
 def update_item_valuation_rate(item_code):
@@ -321,7 +254,7 @@ def update_item_valuation_rate(item_code):
         frappe.db.set_value("Item", item_code, "valuation_rate", new_valuation_rate)
 
 
-def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
+def update_stock_ledger_entry(doc_stock_ledger, is_cancelled=0):
     """
     Update Stock Ledger Entries
     """
@@ -332,7 +265,7 @@ def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
         if doc_stock_ledger.entry_type == "Receipt":
             # Inward entry to to_warehouse
             sl_entries.append(
-                get_sl_entry(
+                get_stock_ledger_entry(
                     doc_stock_ledger,
                     item,
                     doc_stock_ledger.to_warehouse,
@@ -344,7 +277,7 @@ def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
         elif doc_stock_ledger.entry_type == "Issue":
             # Outward entry from from_warehouse
             sl_entries.append(
-                get_sl_entry(
+                get_stock_ledger_entry(
                     doc_stock_ledger,
                     item,
                     doc_stock_ledger.from_warehouse,
@@ -356,7 +289,7 @@ def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
         elif doc_stock_ledger.entry_type == "Transfer":
             # Outward entry from from_warehouse
             sl_entries.append(
-                get_sl_entry(
+                get_stock_ledger_entry(
                     doc_stock_ledger,
                     item,
                     doc_stock_ledger.from_warehouse,
@@ -367,7 +300,7 @@ def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
 
             # Inward entry to to_warehouse
             sl_entries.append(
-                get_sl_entry(
+                get_stock_ledger_entry(
                     doc_stock_ledger,
                     item,
                     doc_stock_ledger.to_warehouse,
@@ -380,7 +313,7 @@ def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
             # Adjustment can be positive or negative
             if flt(item.quantity) > 0:
                 sl_entries.append(
-                    get_sl_entry(
+                    get_stock_ledger_entry(
                         doc_stock_ledger,
                         item,
                         doc_stock_ledger.to_warehouse,
@@ -390,7 +323,7 @@ def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
                 )
             else:
                 sl_entries.append(
-                    get_sl_entry(
+                    get_stock_ledger_entry(
                         doc_stock_ledger,
                         item,
                         doc_stock_ledger.from_warehouse,
@@ -401,4 +334,71 @@ def update_stock_ledger(doc_stock_ledger, is_cancelled=0):
 
     # Create Stock Ledger Entries
     if sl_entries:
-        make_stock_ledger_entries(sl_entries)
+        make_stock_ledger_entry(sl_entries)
+
+
+def update_bin(doc):
+    """
+    Update bin qty after Stock Entry submit/cancel
+    """
+
+    # Update bins for all affected warehouses and items
+    affected_items = {}
+
+    for item in doc.items:
+        if doc.entry_type == "Receipt":
+            affected_items.setdefault(item.item_code, []).append(doc.to_warehouse)
+
+        elif doc.entry_type == "Issue":
+            affected_items.setdefault(item.item_code, []).append(doc.from_warehouse)
+
+        elif doc.entry_type == "Transfer":
+            affected_items.setdefault(item.item_code, []).append(doc.from_warehouse)
+            affected_items.setdefault(item.item_code, []).append(doc.to_warehouse)
+
+        elif doc.entry_type == "Adjustment":
+            warehouse = (
+                doc.to_warehouse if flt(item.quantity) > 0 else doc.from_warehouse
+            )
+            affected_items.setdefault(item.item_code, []).append(warehouse)
+
+    # Ensure unique warehouses for each item
+    for item_code, warehouses in affected_items.items():
+        for warehouse in list(set(warehouses)):
+            update_bin_from_stock_ledger_entry(item_code, warehouse)
+
+
+def update_bin_from_stock_ledger_entry(item_code, warehouse):
+    """
+    Update Bin based on Stock Ledger Entry
+    """
+    # Get or create Bin
+    bin_doc = get_or_create_bin(item_code, warehouse)
+
+    # Get latest actual_qty from SLE
+    actual_qty = get_actual_qty_from_stock_ledger_entry(item_code, warehouse)
+
+    # Get other reserved quantities
+    # These values would usually come from other documents (PO, SO, etc.)
+    # Simplified version here
+    ordered_qty = get_ordered_qty(item_code, warehouse)
+    reserved_qty = get_reserved_qty(item_code, warehouse)
+
+    # Calculate projected_qty
+    projected_qty = flt(actual_qty) + flt(ordered_qty) - flt(reserved_qty)
+
+    # Update the Bin
+    frappe.db.set_value(
+        "Bin",
+        bin_doc.name,
+        {
+            "actual_qty": actual_qty,
+            "projected_qty": projected_qty,
+            "ordered_qty": ordered_qty,
+            "reserved_qty": reserved_qty,
+        },
+        update_modified=False,
+    )
+
+    # Update item valuation rate if needed
+    update_item_valuation_rate(item_code)

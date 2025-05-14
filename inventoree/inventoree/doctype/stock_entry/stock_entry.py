@@ -8,7 +8,7 @@ from frappe.utils import flt, nowdate, nowtime
 from frappe.model.document import Document
 from inventoree.utils.naming import get_stock_entry_prefix
 from inventoree.inventoree.actions.stock_ledger_entry_actions import (
-    update_stock_ledger,
+    update_stock_ledger_entry,
     update_bin,
 )
 
@@ -33,7 +33,7 @@ class StockEntry(Document):
 
     def on_cancel(doc, method):
         """Actions on cancel"""
-        update_stock_ledger(doc, is_cancelled=1)
+        update_stock_ledger_entry(doc, is_cancelled=1)
         update_bin(doc)
 
     def on_change(doc, method):
@@ -44,7 +44,7 @@ class StockEntry(Document):
 
         if doc.status == "Submitted" and doc.entry_type == "Receipt":
             # Create Stock Ledger Entries
-            update_stock_ledger(doc)
+            update_stock_ledger_entry(doc)
 
             # Update Bin records
             update_bin(doc)
