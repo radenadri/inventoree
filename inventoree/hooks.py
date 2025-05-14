@@ -147,8 +147,8 @@ app_license = "mit"
 
 doc_events = {
     "Stock Entry": {
-        "on_cancel": "inventoree.inventoree.events.stock_ledger_entry_events.on_cancel",
-        "on_change": "inventoree.inventoree.events.stock_ledger_entry_events.on_change",
+        "on_cancel": "inventoree.inventoree.events.stock_entry_events.on_cancel",
+        "on_change": "inventoree.inventoree.events.stock_entry_events.on_change",
     }
 }
 
