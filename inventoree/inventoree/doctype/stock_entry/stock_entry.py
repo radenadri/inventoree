@@ -7,6 +7,10 @@ from frappe import _
 from frappe.utils import flt, nowdate, nowtime
 from frappe.model.document import Document
 from inventoree.utils.naming import get_stock_entry_prefix
+from inventoree.inventoree.actions.stock_ledger_entry_actions import (
+    update_stock_ledger,
+    update_bin,
+)
 
 
 class StockEntry(Document):
@@ -26,6 +30,24 @@ class StockEntry(Document):
         self.validate_stock_availability()
         self.calculate_totals()
         self.set_status()
+
+    def on_cancel(doc, method):
+        """Actions on cancel"""
+        update_stock_ledger(doc, is_cancelled=1)
+        update_bin(doc)
+
+    def on_change(doc, method):
+        """Actions on change"""
+
+        # Dijalankan saat status berubah
+        # frappe.msgprint(f"Status changed to {doc.status}")
+
+        if doc.status == "Submitted" and doc.entry_type == "Receipt":
+            # Create Stock Ledger Entries
+            update_stock_ledger(doc)
+
+            # Update Bin records
+            update_bin(doc)
 
     def validate_posting_date_time(self):
         """
