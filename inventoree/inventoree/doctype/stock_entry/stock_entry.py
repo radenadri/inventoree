@@ -4,9 +4,8 @@
 from __future__ import unicode_literals
 import frappe
 from frappe import _
-from frappe.utils import flt, cint, cstr, nowdate, nowtime, get_datetime, add_days
+from frappe.utils import flt, nowdate, nowtime
 from frappe.model.document import Document
-import json
 from inventoree.utils.naming import get_stock_entry_prefix
 
 
@@ -44,40 +43,37 @@ class StockEntry(Document):
         """
         if self.entry_type in ["Issue", "Transfer"] and not self.from_warehouse:
             frappe.throw(
-                _("From Warehouse is required for {0}").format(self.entry_type))
+                _("From Warehouse is required for {0}").format(self.entry_type)
+            )
 
         if self.entry_type in ["Receipt", "Transfer"] and not self.to_warehouse:
-            frappe.throw(
-                _("To Warehouse is required for {0}").format(self.entry_type))
+            frappe.throw(_("To Warehouse is required for {0}").format(self.entry_type))
 
         if self.entry_type == "Transfer" and self.from_warehouse == self.to_warehouse:
-            frappe.throw(
-                _("From and To Warehouse cannot be the same for a Transfer"))
+            frappe.throw(_("From and To Warehouse cannot be the same for a Transfer"))
 
         if self.entry_type == "Adjustment":
             if self.adjustment_type == "Positive" and not self.to_warehouse:
-                frappe.throw(
-                    _("To Warehouse is required for Positive Adjustment"))
+                frappe.throw(_("To Warehouse is required for Positive Adjustment"))
             elif self.adjustment_type == "Negative" and not self.from_warehouse:
-                frappe.throw(
-                    _("From Warehouse is required for Negative Adjustment"))
+                frappe.throw(_("From Warehouse is required for Negative Adjustment"))
 
     def validate_items(self):
         """
         Validate items in the Stock Entry
         """
-        if not self.get('items') or not len(self.get('items')):
-            frappe.throw(_("Stock Entry must have at least one item"))
+        if not self.get("items") or not len(self.get("items")):
+            frappe.throw(_("Stock entry must have at least one item"))
 
         for item in self.items:
             # Validate basic item data
             if not item.item_code:
-                frappe.throw(
-                    _("Row {0}: Item Code is required").format(item.idx))
+                frappe.throw(_("Row {0}: Item Code is required").format(item.idx))
 
             if not item.quantity or flt(item.quantity) <= 0:
                 frappe.throw(
-                    _("Row {0}: Quantity must be greater than 0").format(item.idx))
+                    _("Row {0}: Quantity must be greater than 0").format(item.idx)
+                )
 
             # Fetch item details if not already set
             if not item.item_name:
@@ -97,15 +93,20 @@ class StockEntry(Document):
         Validate stock availability for issue and transfer
         """
         # Check if negative stock is allowed
-        allow_negative_stock = frappe.db.get_single_value(
-            'Inventory Settings', 'allow_negative_stock') or False
+        allow_negative_stock = (
+            frappe.db.get_single_value("Inventory Settings", "allow_negative_stock")
+            or False
+        )
 
         if not allow_negative_stock and self.entry_type in ["Issue", "Transfer"]:
             for item in self.items:
                 bin_qty = get_bin_qty(item.item_code, self.from_warehouse)
                 if flt(bin_qty) < flt(item.quantity):
-                    frappe.throw(_("Row {0}: Insufficient stock of item {1} in warehouse {2}. Available quantity: {3}")
-                                 .format(item.idx, item.item_code, self.from_warehouse, bin_qty))
+                    frappe.throw(
+                        _(
+                            "Row {0}: Insufficient stock of item {1} in warehouse {2}. Available quantity: {3}"
+                        ).format(item.idx, item.item_code, self.from_warehouse, bin_qty)
+                    )
 
         # For Adjustment with negative quantity, validate stock
         if not allow_negative_stock and self.entry_type == "Adjustment":
@@ -113,23 +114,26 @@ class StockEntry(Document):
                 if flt(item.quantity) < 0:
                     bin_qty = get_bin_qty(item.item_code, self.from_warehouse)
                     if flt(bin_qty) < abs(flt(item.quantity)):
-                        frappe.throw(_("Row {0}: Insufficient stock of item {1} in warehouse {2} for adjustment. Available quantity: {3}")
-                                     .format(item.idx, item.item_code, self.from_warehouse, bin_qty))
+                        frappe.throw(
+                            _(
+                                "Row {0}: Insufficient stock of item {1} in warehouse {2} for adjustment. Available quantity: {3}"
+                            ).format(
+                                item.idx, item.item_code, self.from_warehouse, bin_qty
+                            )
+                        )
 
     def calculate_totals(self):
         """
         Calculate total quantity and amount
         """
-        self.total_quantity = sum(flt(item.quantity)
-                                  for item in self.get('items'))
-        self.total_amount = sum(flt(item.basic_amount)
-                                for item in self.get('items'))
+        self.total_quantity = sum(flt(item.quantity) for item in self.get("items"))
+        self.total_amount = sum(flt(item.basic_amount) for item in self.get("items"))
 
     def set_status(self):
         """
         Set initial status based on workflow state or docstatus
         """
-        if hasattr(self, 'workflow_state') and self.workflow_state:
+        if hasattr(self, "workflow_state") and self.workflow_state:
             self.status = self.workflow_state
         else:
             if self.docstatus == 0:
@@ -148,7 +152,7 @@ def get_bin_qty(item_code, warehouse):
         "Bin",
         {"item_code": item_code, "warehouse": warehouse},
         "actual_qty",
-        as_dict=True
+        as_dict=True,
     )
 
     return flt(bin_data.actual_qty) if bin_data and bin_data.actual_qty else 0
@@ -168,7 +172,7 @@ def get_item_details(item_code):
         "item_name": item_doc.item_name,
         "uom": item_doc.uom,
         "valuation_rate": item_doc.valuation_rate,
-        "description": item_doc.description
+        "description": item_doc.description,
     }
 
 

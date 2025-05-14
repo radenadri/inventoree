@@ -1,7 +1,8 @@
-import frappe
-from frappe.utils import flt, cint, cstr, nowdate, nowtime, get_datetime, add_days
-from inventoree.inventoree.stock_ledger import make_stock_ledger_entries
-from inventoree.inventoree.stock_ledger import update_bin_from_sle
+from frappe.utils import flt
+from inventoree.inventoree.actions.stock_ledger_entry_actions import (
+    make_stock_ledger_entries,
+    update_bin_from_sle,
+)
 
 
 def on_cancel(doc, method):
@@ -25,7 +26,7 @@ def on_change(doc, method):
         update_stock_ledger(doc)
 
         # Update Bin records
-        update_bin_records(doc)
+        update_bin(doc)
 
 
 def update_stock_ledger(doc, is_cancelled=0):
@@ -38,31 +39,49 @@ def update_stock_ledger(doc, is_cancelled=0):
         # Handle different entry types
         if doc.entry_type == "Receipt":
             # Inward entry to to_warehouse
-            sl_entries.append(get_sl_entry(
-                doc, item, doc.to_warehouse, flt(item.quantity), is_cancelled))
+            sl_entries.append(
+                get_sl_entry(
+                    doc, item, doc.to_warehouse, flt(item.quantity), is_cancelled
+                )
+            )
 
         elif doc.entry_type == "Issue":
             # Outward entry from from_warehouse
-            sl_entries.append(get_sl_entry(
-                doc, item, doc.from_warehouse, -1 * flt(item.quantity), is_cancelled))
+            sl_entries.append(
+                get_sl_entry(
+                    doc, item, doc.from_warehouse, -1 * flt(item.quantity), is_cancelled
+                )
+            )
 
         elif doc.entry_type == "Transfer":
             # Outward entry from from_warehouse
-            sl_entries.append(get_sl_entry(
-                doc, item, doc.from_warehouse, -1 * flt(item.quantity), is_cancelled))
+            sl_entries.append(
+                get_sl_entry(
+                    doc, item, doc.from_warehouse, -1 * flt(item.quantity), is_cancelled
+                )
+            )
 
             # Inward entry to to_warehouse
-            sl_entries.append(get_sl_entry(
-                doc, item, doc.to_warehouse, flt(item.quantity), is_cancelled))
+            sl_entries.append(
+                get_sl_entry(
+                    doc, item, doc.to_warehouse, flt(item.quantity), is_cancelled
+                )
+            )
 
         elif doc.entry_type == "Adjustment":
             # Adjustment can be positive or negative
             if flt(item.quantity) > 0:
-                sl_entries.append(get_sl_entry(
-                    doc, item, doc.to_warehouse, flt(item.quantity), is_cancelled))
+                sl_entries.append(
+                    get_sl_entry(
+                        doc, item, doc.to_warehouse, flt(item.quantity), is_cancelled
+                    )
+                )
             else:
-                sl_entries.append(get_sl_entry(
-                    doc, item, doc.from_warehouse, flt(item.quantity), is_cancelled))
+                sl_entries.append(
+                    get_sl_entry(
+                        doc, item, doc.from_warehouse, flt(item.quantity), is_cancelled
+                    )
+                )
 
     # Create Stock Ledger Entries
     if sl_entries:
@@ -114,22 +133,19 @@ def update_bin(doc):
 
     for item in doc.items:
         if doc.entry_type == "Receipt":
-            affected_items.setdefault(
-                item.item_code, []).append(doc.to_warehouse)
+            affected_items.setdefault(item.item_code, []).append(doc.to_warehouse)
 
         elif doc.entry_type == "Issue":
-            affected_items.setdefault(
-                item.item_code, []).append(doc.from_warehouse)
+            affected_items.setdefault(item.item_code, []).append(doc.from_warehouse)
 
         elif doc.entry_type == "Transfer":
-            affected_items.setdefault(
-                item.item_code, []).append(doc.from_warehouse)
-            affected_items.setdefault(
-                item.item_code, []).append(doc.to_warehouse)
+            affected_items.setdefault(item.item_code, []).append(doc.from_warehouse)
+            affected_items.setdefault(item.item_code, []).append(doc.to_warehouse)
 
         elif doc.entry_type == "Adjustment":
-            warehouse = doc.to_warehouse if flt(
-                item.quantity) > 0 else doc.from_warehouse
+            warehouse = (
+                doc.to_warehouse if flt(item.quantity) > 0 else doc.from_warehouse
+            )
             affected_items.setdefault(item.item_code, []).append(warehouse)
 
     # Ensure unique warehouses for each item

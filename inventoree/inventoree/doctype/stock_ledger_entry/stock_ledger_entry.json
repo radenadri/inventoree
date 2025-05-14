@@ -19,7 +19,10 @@
   "posting_time",
   "quantity_and_valuation_section",
   "actual_quantity",
+  "qty_after_transaction",
   "incoming_rate",
+  "valuation_rate",
+  "stock_value",
   "stock_value_change",
   "stock_value_difference"
  ],
@@ -48,6 +51,7 @@
    "read_only": 1
   },
   {
+   "fetch_from": "item_code.item_name",
    "fieldname": "voucher_detail_no",
    "fieldtype": "Data",
    "label": "Voucher Detail No",
@@ -130,11 +134,26 @@
    "fieldname": "stock_value_difference",
    "fieldtype": "Currency",
    "label": "Stock Value Difference"
+  },
+  {
+   "fieldname": "qty_after_transaction",
+   "fieldtype": "Float",
+   "label": "Quantity After Transaction"
+  },
+  {
+   "fieldname": "valuation_rate",
+   "fieldtype": "Currency",
+   "label": "Valuation Rate"
+  },
+  {
+   "fieldname": "stock_value",
+   "fieldtype": "Currency",
+   "label": "Stock Value"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-04-30 20:48:54.706871",
+ "modified": "2025-05-14 09:29:32.617142",
  "modified_by": "Administrator",
  "module": "Inventoree",
  "name": "Stock Ledger Entry",

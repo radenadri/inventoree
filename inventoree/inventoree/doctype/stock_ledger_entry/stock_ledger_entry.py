@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import frappe
 from frappe.model.document import Document
+from frappe.model.naming import make_autoname
 
 
 class StockLedgerEntry(Document):
@@ -11,8 +12,7 @@ class StockLedgerEntry(Document):
         """
         Generate a unique name for the Stock Ledger Entry
         """
-        from frappe.model.naming import make_autoname
-        self.name = make_autoname('SLE-.#####')
+        self.name = make_autoname("SLE-.#####")
 
     def validate(self):
         """
@@ -26,8 +26,14 @@ class StockLedgerEntry(Document):
         """
         Validate mandatory fields
         """
-        mandatory = ['item_code', 'warehouse', 'posting_date', 'posting_time',
-                     'voucher_type', 'voucher_no', 'company']
+        mandatory = [
+            "item_code",
+            "warehouse",
+            "posting_date",
+            "posting_time",
+            "voucher_type",
+            "voucher_no",
+        ]
 
         for field in mandatory:
             if not self.get(field):
