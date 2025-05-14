@@ -1,5 +1,4 @@
 {
- "_liked_by": "[\"Administrator\"]",
  "actions": [],
  "allow_rename": 1,
  "creation": "2025-04-30 23:32:14.031969",
@@ -15,7 +14,8 @@
   "reserved_quantity",
   "ordered_quantity",
   "indented_quantity",
-  "planned_quantity"
+  "planned_quantity",
+  "uom"
  ],
  "fields": [
   {
@@ -81,11 +81,16 @@
    "fieldtype": "Float",
    "label": "Planned Quantity",
    "precision": "1"
+  },
+  {
+   "fieldname": "uom",
+   "fieldtype": "Data",
+   "label": "Stock UOM"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-01 01:54:06.330352",
+ "modified": "2025-05-14 13:58:42.882245",
  "modified_by": "Administrator",
  "module": "Inventoree",
  "name": "Bin",
