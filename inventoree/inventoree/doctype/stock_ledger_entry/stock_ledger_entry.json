@@ -23,7 +23,6 @@
   "incoming_rate",
   "valuation_rate",
   "stock_value",
-  "stock_value_change",
   "stock_value_difference"
  ],
  "fields": [
@@ -124,12 +123,6 @@
    "label": "Incoming Rate"
   },
   {
-   "description": "Change in total inventory value",
-   "fieldname": "stock_value_change",
-   "fieldtype": "Currency",
-   "label": "Stock Value Change"
-  },
-  {
    "description": "Net effect on inventory value",
    "fieldname": "stock_value_difference",
    "fieldtype": "Currency",
@@ -153,7 +146,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2025-05-14 09:29:32.617142",
+ "modified": "2025-05-14 14:20:23.862637",
  "modified_by": "Administrator",
  "module": "Inventoree",
  "name": "Stock Ledger Entry",

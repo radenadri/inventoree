@@ -96,17 +96,17 @@ def get_stock_ledger_entry(doc, item, warehouse, qty, is_cancelled=0):
 
     # Create SLE data
     sle = {
-        "item_code": item.item_code,
-        "item_name": item.item_name,
-        "warehouse": warehouse,
-        "posting_date": doc.posting_date,
-        "posting_time": doc.posting_time,
         "voucher_type": "Stock Entry",
         "voucher_no": doc.name,
         "voucher_detail_no": item.name,
-        "incoming_rate": incoming_rate,
-        "actual_quantity": actual_qty,
+        "item_code": item.item_code,
+        "item_name": item.item_name,
         "uom": item.uom,
+        "warehouse": warehouse,
+        "posting_date": doc.posting_date,
+        "posting_time": doc.posting_time,
+        "actual_quantity": actual_qty,
+        "incoming_rate": incoming_rate,
     }
 
     return sle

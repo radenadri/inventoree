@@ -31,11 +31,6 @@ class StockEntry(Document):
         self.calculate_totals()
         self.set_status()
 
-    def on_cancel(doc, method):
-        """Actions on cancel"""
-        update_stock_ledger_entry(doc, is_cancelled=1)
-        update_bin(doc)
-
     def on_change(doc, method):
         """Actions on change"""
 
@@ -48,6 +43,11 @@ class StockEntry(Document):
 
             # Update Bin records
             update_bin(doc)
+
+    def on_cancel(doc, method):
+        """Actions on cancel"""
+        update_stock_ledger_entry(doc, is_cancelled=1)
+        update_bin(doc)
 
     def validate_posting_date_time(self):
         """
